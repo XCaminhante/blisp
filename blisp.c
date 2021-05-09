@@ -30,16 +30,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include "minimal_UTF8/utf.h"
+#include "minimal_UTF8/utf.c"
 //@+node:caminhante.20210508220407.3: *3* /macros
 #define ALLOC(N,S) (typeof(S)*)calloc(N,sizeof(S))
 #define ERROR(MSG,A) (puts(MSG), print_expr(A), exit(1))
 #define INPUT_SIZE 1024*16
-//@+node:caminhante.20210508220407.4: *3* /constants, variables and types
-char last_char = -1;
+//@+node:caminhante.20210508220407.4: *3* /constants, variables
 const int close_char = ')';
 bool exiting = false;
-struct Atom *t;
-struct Table *val;
+//@+node:caminhante.20210508224249.1: *3* /types
 //@+node:caminhante.20210508220407.5: *4* enum Type
 enum Type {
    NUM,
@@ -58,14 +58,14 @@ struct Atom {
    enum Type type;
    union {
       int num;
-      int *str;
+      struct uchar *str;
       struct List *list;
       struct Table *table;
    };
 };
 //@+node:caminhante.20210508220407.8: *4* struct Table
 struct Table {
-   int *key;
+   struct uchar *key;
    struct Atom *value;
    struct Table *next;
 };
@@ -73,6 +73,7 @@ struct Table {
 // static struct Atom* parse (void);
 //@+node:caminhante.20210508220645.1: ** /life cycle
 //@+node:caminhante.20210508220702.1: *3* static bool _initialize ()
+// [ I -> prints a initial text ]
 static bool _initialize () {
   puts("Copyright (C) 2021 X Caminhante\n"
        "This program comes with ABSOLUTELY NO WARRANTY; for details type (help warranty)\n"
@@ -81,10 +82,12 @@ static bool _initialize () {
   return true;
 }
 //@+node:caminhante.20210508221257.1: *3* static void prompt ()
+// [ I -> prints a simple prompt, indicating that the interpreter is waiting for instructions ]
 static void prompt () {
   printf("> ");
 }
 //@+node:caminhante.20210508221052.1: *3* static bool repl (size_t in_len, char in[static in_len])
+[  ]
 static bool repl (size_t in_len, char in[static in_len]) {
   return true;
 }
