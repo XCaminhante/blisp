@@ -26,10 +26,20 @@
 </v>
 <v t="caminhante.20210508214940.1"><vh>B Lisp</vh>
 <v t="caminhante.20210508215133.1"><vh>@path .</vh>
+<v t="caminhante.20210508223123.3"><vh>.gitmodules</vh></v>
 <v t="caminhante.20210508215135.4"><vh>/.git/</vh></v>
+<v t="caminhante.20210508223123.2"><vh>/minimal_UTF8/</vh>
+<v t="caminhante.20210508223133.7"><vh>.git</vh></v>
+<v t="caminhante.20210508223133.6"><vh>LICENSE</vh></v>
+<v t="caminhante.20210508223133.5"><vh>Makefile</vh></v>
+<v t="caminhante.20210508223133.4"><vh>README.md</vh></v>
+<v t="caminhante.20210508223133.3"><vh>minimal_UTF8.leo</vh></v>
+<v t="caminhante.20210508223133.2"><vh>utf8.c</vh></v>
+<v t="caminhante.20210508223133.1"><vh>utf8.h</vh></v>
+</v>
 <v t="caminhante.20210508215135.2"><vh>@auto README.md</vh></v>
-<v t="caminhante.20210508215135.3"><vh>@edit LICENSE</vh></v>
 <v t="caminhante.20210508220611.1"><vh>@edit .gitignore</vh></v>
+<v t="caminhante.20210508215135.3"><vh>@edit LICENSE</vh></v>
 <v t="caminhante.20210508220429.1"><vh>@edit Makefile</vh></v>
 <v t="caminhante.20210508215346.1"><vh>@file blisp.c</vh></v>
 <v t="caminhante.20210508215135.1"><vh>b.leo</vh></v>
@@ -299,5 +309,14 @@ shutil.rmtree(path)
 <t tx="caminhante.20210508215133.1"></t>
 <t tx="caminhante.20210508215135.1"></t>
 <t tx="caminhante.20210508215135.4">@path .git</t>
+<t tx="caminhante.20210508223123.2">@path minimal_UTF8</t>
+<t tx="caminhante.20210508223123.3"></t>
+<t tx="caminhante.20210508223133.1"></t>
+<t tx="caminhante.20210508223133.2"></t>
+<t tx="caminhante.20210508223133.3"></t>
+<t tx="caminhante.20210508223133.4"></t>
+<t tx="caminhante.20210508223133.5"></t>
+<t tx="caminhante.20210508223133.6"></t>
+<t tx="caminhante.20210508223133.7"></t>
 </tnodes>
 </leo_file>

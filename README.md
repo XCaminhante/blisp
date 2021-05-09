@@ -1,3 +1,5 @@
-# blisp
-B Lisp, um interpretador de Lisp em C para estudar
+# B Lisp
+B Lisp, um interpretador de Lisp em C para estudar.
+
+V
 

@@ -1,0 +1,4 @@
+[submodule "minimal_UTF8"]
+	path = minimal_UTF8
+	url = https://notabug.org/XCaminhante/minimal_UTF8.git
+	branch = trunk
