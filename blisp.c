@@ -87,16 +87,48 @@ static void prompt () {
   printf("> ");
 }
 //@+node:caminhante.20210508221052.1: *3* static bool repl (size_t in_len, char in[static in_len])
-[  ]
+// [ syntatically valid sequence of B Lisp tokens forming an expression ->
+  // expression evaluation and true | something went wrong and false ]
 static bool repl (size_t in_len, char in[static in_len]) {
+  // points to the last byte parsed, 0 if nothing was parsed yet
+  size_t last_byte = 0;
+  // controls how many bytes were received from the input
+  size_t read_bytes = read(STDIN_FILENO, in, in_len);
+  //@+others
+  //@+node:caminhante.20210508234212.1: *4* size_t replenish_bytes (size_t spare_bytes)
+  // [ `spare_bytes` -> moves those spare bytes to the beginning of `in`, reads more bytes in
+  // the space immediately after the moved ones respecting the remaining space, and returns the
+  // number of bytes currently at `in` (that's it, `spare_bytes` + recently read bytes ]
+  size_t replenish_bytes (size_t spare_bytes) {
+    // [ spare_bytes == 0 -> I |
+      // spare_bytes > 0 -> copy `spare_bytes` bytes from `in[in_len-spare_bytes-1]` to `in[0]` ]
+    if (spare_bytes > 0) {}
+    // [ try to read `in_len-spare_bytes` bytes from stdin starting at `in[spare_bytes]` ]
+    // [ returns `spare_bytes+recently_read_bytes` ]
+    return 0;
+  }
+  //@+node:caminhante.20210508233816.1: *4* struct uchar _getchar ()
+  // [ returns a UTF-8 character, and if necessary, reads new bytes from the input ]
+  struct uchar _getchar () {
+    // [ last_byte < read_bytes -> get next uchar from `in` and increment last_byte |
+      // last_byte >= read_bytes -> read more bytes from stdin into `in` and tries again ] 
+    if (last_char < occupied) {
+      // [ get next uchar from `in` and increment last_byte ]
+    } else if (last_char == occupied) {
+      // [ read more bytes from stdin into `in` and tries again ]
+      read_bytes = replenish_bytes(0);
+    }
+  }
+  //@-others
   return true;
 }
 //@+node:caminhante.20210508220650.1: *3* static bool _finalize ()
+// [ I -> prepares the interpreter to exit ]
 static bool _finalize () {
   exiting = true;
   return true;
 }
-//@+node:caminhante.20210508221001.1: *3* int main (int argc, char **argv)
+//@+node:caminhante.20210508221001.1: ** int main (int argc, char **argv)
 int main (int argc, char **argv) {
   char incoming[INPUT_SIZE];
   if (_initialize()) {
