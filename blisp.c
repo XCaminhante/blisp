@@ -70,10 +70,16 @@ struct Table {
 };
 //@+node:caminhante.20210509181849.1: ** /warnings and errors
 //@+node:caminhante.20210509181919.1: *3* void warning (msg, expr)
-// [ string `msg`, struct Atom * `expr` (expression that may be associated with the warning) ->
-  // show a warning message using `msg` content,
-  // [ expr != NULL -> print `expr` on the terminal | I ] ]
+// [ string `msg`, struct Atom * `expr` (expression that may be associated with the warning)
+// -> show a warning message using `msg` as the content,
+  // [ expr != NULL
+  // -> print `expr` on the terminal as a detail
+  // | I ] ]
 void warning (const char *msg, struct Atom *expr) {
+  printf("\nWarning: %s",msg);
+  // [ expr != NULL -> print `expr` on the terminal as a detail
+  // | I ]
+  // if (expr != NULL) { printf("\nDetail: "); print_expr(expr); }
 }
 //@+node:caminhante.20210509181932.1: *3* void error (msg, expr)
 //@+node:caminhante.20210509180617.1: ** /input
@@ -98,23 +104,50 @@ size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes
   return spare_bytes+recently_read_bytes;
 }
 //@+node:caminhante.20210508233816.1: *3* struct uchar _getchar (in_len, in, used_bytes, last_read)
-// [ `*last_read < used_bytes` and a valid UTF8 sequence between `in[*last_read]` and `in[used_bytes]`
-// -> a valid struct uchar
-// | `*last_read < used_bytes` and a byte sequence of insufficient length
-// -> replenish_bytes(in,used_bytes,*last_read), *last_read = 0 and retry
-// | else
-// -> a "invalid UTF8 sequence" warning and *last_read equal to the next valid UTF8 sequence position
-   // or equal to `used_bytes`, whichiever comes first ]
-struct uchar _getchar (size_t in_len, char in[static in_len], size_t used_bytes, size_t **last_read) {
-  // [ `*last_read < used_bytes` -> try to extract a `struct uchar`
-  // | else -> replenish_bytes(in,used_bytes,*last_read), *last_read = 0 and retry ]
-  if (*last_read < used_bytes) {
-    // [ a valid UTF8 sequence with length >= `used_bytes-*last_read` -> extract a `struct uchar`
-    // | a invalid UTF8 sequence -> issue a warning, increment `*last_read` and retry
-    // | else -> replenish_bytes(in,used_bytes,*last_read), *last_read = 0 and retry ]
+// [ a valid UTF8 sequence between `in[**last_read]` and `in[**used_bytes]`
+// -> returns a valid struct uchar
+// | a UTF8 sequence of length larger than the rest of `in` not yet parsed
+// -> replenish_bytes at in, **last_read = 0 and retry
+// | a invalid UTF8 sequence
+// -> a "invalid UTF8 sequence" warning, increment **last_read and try again ]
+struct uchar _getchar (size_t in_len, char in[static in_len], size_t **used_bytes, size_t **last_read) {
+  try_again:
+  // [ `**last_read < **used_bytes` -> try to extract a `struct uchar`
+  // | else -> replenish_bytes at in, **last_read = 0 and retry ]
+  if (**last_read < **used_bytes) {
+    // [ a valid UTF8 sequence with length >= `**used_bytes-**last_read` -> extract a `struct uchar`
+    // | a invalid UTF8 sequence -> issue a warning, increment `**last_read` and retry
+    // | else -> replenish_bytes at in, **last_read = 0 and retry ]
+    size_t a = uchar_bytes(&in[**last_read]);
+    // a invalid UTF8 sequence?
+    if (a == 0) {
+      // [ issue a warning, increment `**last_read` and retry ]
+      warning("Invalid UTF8 byte sequence",NULL);
+      **last_read += 1;
+      goto try_again;
+    // a valid UTF8 sequence with length >= `**used_bytes-**last_read`?
+    } else if ( a >= (**used_bytes - **last_read) ) {
+      // [ extract a `struct uchar` from `&in[**last_read]` and returns it ]
+      struct uchar b = next_uchar(&in[**last_read]);
+      **last_read += b.bytes;
+      return b;
+    // there is a valid UTF8 sequence but its length is shorter than the available rest of `in`
+    } else {
+      // [ replenish_bytes at in, **last_read = 0 and retry ]
+      size_t a = replenish_bytes(in_len, in,**used_bytes,**last_read);
+      **used_bytes = a;
+      **last_read = 0;
+      goto try_again;
+    }
   } else {
-    // [ replenish_bytes(in,used_bytes,*last_read), *last_read = 0 and retry ]
+    // [ replenish_bytes at in, **last_read = 0 and retry ]
+    size_t a = replenish_bytes(in_len, in,**used_bytes,**last_read);
+    **used_bytes = a;
+    **last_read = 0;
+    goto try_again;
   }
+  // [ inacessible -> returns a invalid 0-filled `struct uchar` ]
+  return (struct uchar){0};
 }
 //@+node:caminhante.20210508220645.1: ** /life cycle
 //@+node:caminhante.20210508220702.1: *3* static bool _initialize ()
