@@ -68,6 +68,13 @@ struct Table {
    struct Atom *value;
    struct Table *next;
 };
+//@+node:caminhante.20210509235504.1: *4* struct ParserState
+struct ParserState {
+  size_t in_len;
+  char *in;
+  size_t *used_bytes;
+  size_t *last_read;
+};
 //@+node:caminhante.20210509181849.1: ** /warnings and errors
 //@+node:caminhante.20210509181919.1: *3* void warning (msg, expr)
 // [ string `msg`, struct Atom * `expr` (expression that may be associated with the warning)
@@ -83,6 +90,7 @@ void warning (const char *msg, struct Atom *expr) {
 }
 //@+node:caminhante.20210509181932.1: *3* void error (msg, expr)
 //@+node:caminhante.20210509180617.1: ** /input
+// #TODO modify the input functions to operate with a `struct ParserState`
 //@+node:caminhante.20210508234212.1: *3* size_t replenish_bytes (in_len, in, used_bytes, spare_bytes)
 // [ char array `in`
 // , positive integer `used_bytes` (number of bytes that were actually read into `in`)
@@ -148,6 +156,44 @@ struct uchar _getchar (size_t in_len, char in[static in_len], size_t *used_bytes
   // [ inacessible -> returns a invalid 0-filled `struct uchar` ]
   return (struct uchar){0};
 }
+//@+node:caminhante.20210510000539.1: ** /memory
+//@+node:caminhante.20210510000737.1: *3* struct Atom * new_atom (type)
+//@+node:caminhante.20210510000758.1: *3* struct Atom * new_number (num)
+//@+node:caminhante.20210510000849.1: *3* struct Atom * new_string (str)
+//@+node:caminhante.20210510000645.1: *3* struct List * new_list (head, tail)
+//@+node:caminhante.20210510000921.1: *3* struct List * new_lambda (arguments, tail)
+//@+node:caminhante.20210509235359.1: ** /tokens
+//@+node:caminhante.20210509235424.1: *3* struct uchar * skip_whitespace (parser_state)
+struct uchar * skip_whitespace (struct ParserState *parser_state) {
+  return NULL;
+}
+//@+node:caminhante.20210509235655.1: *3* bool read_literal (parser_state, lit)
+bool read_literal (struct ParserState *parser_state, struct uchar *lit) {
+  return false;
+}
+//@+node:caminhante.20210509235709.1: *3* size_t read_number (parser_state)
+size_t read_number (struct ParserState *parser_state) {
+  return 0;
+}
+//@+node:caminhante.20210509235726.1: *3* struct uchar * read_id (parser_state)
+struct uchar * read_id (struct ParserState *parser_state) {
+  return NULL;
+}
+//@+node:caminhante.20210509235740.1: *3* struct uchar * read_string (parser_state)
+struct uchar * read_string (struct ParserState *parser_state) {
+  return NULL;
+}
+//@+node:caminhante.20210510000229.1: ** /parser
+//@+node:caminhante.20210510000234.1: *3* struct List * parse_list (parser_state)
+//@+node:caminhante.20210510000432.1: *3* struct List * parse_lambda (parser_state)
+//@+node:caminhante.20210510000456.1: *3* struct Table * parse_table (parser_state)
+//@+node:caminhante.20210510000517.1: *3* struct Atom * parse_atom (parser_state)
+//@+node:caminhante.20210510001052.1: ** /type operations
+//@+node:caminhante.20210510001059.1: *3* bool is_equal (atom1, atom2)
+//@+node:caminhante.20210510001320.1: *3* size_t list_size (list)
+//@+node:caminhante.20210510001154.1: *3* /table operations
+//@+node:caminhante.20210510001128.1: *4* struct Atom * lookup_table (key)
+//@+node:caminhante.20210510001207.1: *4* structt Table * add_to_table (key, value)
 //@+node:caminhante.20210508220645.1: ** /life cycle
 //@+node:caminhante.20210508220702.1: *3* static bool _initialize ()
 // [ I -> prints a initial text ]
