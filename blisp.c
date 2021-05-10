@@ -91,8 +91,7 @@ void warning (const char *msg, struct Atom *expr) {
    // space, and returns the number of bytes currently at `in` (that's it, spare bytes +
    // recently read bytes) ]
 size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes, size_t spare_bytes) {
-  // [ spare_bytes == 0
-  // -> I
+  // [ spare_bytes == 0 -> I
   // | spare_bytes > 0
   // -> copy `spare_bytes` bytes from `in[used_bytes-spare_bytes-1]` to `in[0]` ]
   if (spare_bytes > 0) {
@@ -104,46 +103,46 @@ size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes
   return spare_bytes+recently_read_bytes;
 }
 //@+node:caminhante.20210508233816.1: *3* struct uchar _getchar (in_len, in, used_bytes, last_read)
-// [ a valid UTF8 sequence between `in[**last_read]` and `in[**used_bytes]`
+// [ a valid UTF8 sequence between `in[*last_read]` and `in[*used_bytes]`
 // -> returns a valid struct uchar
 // | a UTF8 sequence of length larger than the rest of `in` not yet parsed
-// -> replenish_bytes at in, **last_read = 0 and retry
+// -> replenish_bytes at in, *last_read = 0 and retry
 // | a invalid UTF8 sequence
-// -> a "invalid UTF8 sequence" warning, increment **last_read and try again ]
-struct uchar _getchar (size_t in_len, char in[static in_len], size_t **used_bytes, size_t **last_read) {
+// -> a "invalid UTF8 sequence" warning, increment *last_read and try again ]
+struct uchar _getchar (size_t in_len, char in[static in_len], size_t *used_bytes, size_t *last_read) {
   try_again:
-  // [ `**last_read < **used_bytes` -> try to extract a `struct uchar`
-  // | else -> replenish_bytes at in, **last_read = 0 and retry ]
-  if (**last_read < **used_bytes) {
-    // [ a valid UTF8 sequence with length >= `**used_bytes-**last_read` -> extract a `struct uchar`
-    // | a invalid UTF8 sequence -> issue a warning, increment `**last_read` and retry
-    // | else -> replenish_bytes at in, **last_read = 0 and retry ]
-    size_t a = uchar_bytes(&in[**last_read]);
+  // [ `*last_read < *used_bytes` -> try to extract a `struct uchar`
+  // | else -> replenish_bytes at in, *last_read = 0 and retry ]
+  if (*last_read < *used_bytes) {
+    // [ a valid UTF8 sequence with length <= `*used_bytes-*last_read` -> extract a `struct uchar`
+    // | a invalid UTF8 sequence -> issue a warning, increment `*last_read` and retry
+    // | else -> replenish_bytes at in, *last_read = 0 and retry ]
+    size_t a = uchar_bytes(&in[*last_read]);
     // a invalid UTF8 sequence?
     if (a == 0) {
-      // [ issue a warning, increment `**last_read` and retry ]
+      // [ issue a warning, increment `*last_read` and retry ]
       warning("Invalid UTF8 byte sequence",NULL);
-      **last_read += 1;
+      *last_read += 1;
       goto try_again;
-    // a valid UTF8 sequence with length >= `**used_bytes-**last_read`?
-    } else if ( a >= (**used_bytes - **last_read) ) {
-      // [ extract a `struct uchar` from `&in[**last_read]` and returns it ]
-      struct uchar b = next_uchar(&in[**last_read]);
-      **last_read += b.bytes;
+    // a valid UTF8 sequence with length <= `*used_bytes-*last_read`?
+    } else if ( a <= (*used_bytes - *last_read) ) {
+      // [ extract a `struct uchar` from `&in[*last_read]` and returns it ]
+      struct uchar b = next_uchar(&in[*last_read]);
+      *last_read += b.bytes;
       return b;
     // there is a valid UTF8 sequence but its length is shorter than the available rest of `in`
     } else {
-      // [ replenish_bytes at in, **last_read = 0 and retry ]
-      size_t a = replenish_bytes(in_len, in,**used_bytes,**last_read);
-      **used_bytes = a;
-      **last_read = 0;
+      // [ replenish_bytes at in, *last_read = 0 and retry ]
+      size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
+      *used_bytes = a;
+      *last_read = 0;
       goto try_again;
     }
   } else {
-    // [ replenish_bytes at in, **last_read = 0 and retry ]
-    size_t a = replenish_bytes(in_len, in,**used_bytes,**last_read);
-    **used_bytes = a;
-    **last_read = 0;
+    // [ replenish_bytes at in, *last_read = 0 and retry ]
+    size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
+    *used_bytes = a;
+    *last_read = 0;
     goto try_again;
   }
   // [ inacessible -> returns a invalid 0-filled `struct uchar` ]
@@ -170,6 +169,8 @@ static void prompt () {
 // | else
 // -> something went wrong and returns false ]
 static bool repl (size_t in_len, char in[static in_len]) {
+  // size_t used_bytes = 0;
+  // size_t last_read = 0;
   return true;
 }
 //@+node:caminhante.20210508220650.1: *3* static bool _finalize ()
@@ -178,7 +179,7 @@ static bool _finalize () {
   exiting = true;
   return true;
 }
-//@+node:caminhante.20210508221001.1: ** int main (int argc, char **argv)
+//@+node:caminhante.20210508221001.1: ** int main (argc, argv)
 int main (int argc, char **argv) {
   char incoming[INPUT_SIZE];
   if (_initialize()) {
@@ -186,6 +187,7 @@ int main (int argc, char **argv) {
       prompt();
       if (!repl(sizeof(incoming),incoming)) { puts("Error"); }}
   }
+  puts("");
   return 0;
 }
 //@-others
