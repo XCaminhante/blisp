@@ -2,3 +2,7 @@
 	path = minimal_UTF8
 	url = https://notabug.org/XCaminhante/minimal_UTF8.git
 	branch = trunk
+[submodule "CClasses"]
+	path = CClasses
+	url = https://github.com/XCaminhante/CClasses.git
+	branch = devel

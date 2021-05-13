@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include "minimal_UTF8/utf8.h"
 #include "minimal_UTF8/utf8.c"
+#include "CClasses/include/cclasses.h"
 //@+node:caminhante.20210508220407.3: *3* /macros
 #define ALLOC(N,S) (typeof(S)*)calloc(N,sizeof(S))
 #define INPUT_SIZE 1024*16
@@ -89,6 +90,12 @@ void warning (const char *msg, struct Atom *expr) {
   // if (expr != NULL) { printf("\nDetail: "); print_expr(expr); }
 }
 //@+node:caminhante.20210509181932.1: *3* void error (msg, expr)
+//@+node:caminhante.20210513091534.1: ** /parser
+//@+at
+//
+//
+//
+//@@c
 //@+node:caminhante.20210509180617.1: ** /input
 // #TODO modify the input functions to operate with a `struct ParserState`
 //@+node:caminhante.20210508234212.1: *3* size_t replenish_bytes (in_len, in, used_bytes, spare_bytes)

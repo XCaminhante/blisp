@@ -28,6 +28,7 @@
 <v t="caminhante.20210508215133.1"><vh>@path .</vh>
 <v t="caminhante.20210508223123.3"><vh>.gitmodules</vh></v>
 <v t="caminhante.20210508215135.4"><vh>/.git/</vh></v>
+<v t="caminhante.20210513091919.3"><vh>/CClasses/</vh></v>
 <v t="caminhante.20210508231318.2"><vh>/minimal_UTF8/</vh></v>
 <v t="caminhante.20210513083839.1"><vh>/t/</vh>
 <v t="caminhante.20210513083852.1"><vh>@clean Makefile</vh></v>
@@ -324,11 +325,12 @@ TARGETS := $(patsubst %.c,%.t,$(wildcard *.c))
 CFLAGS := -std=gnu99 -Wall -Werror -Wno-error=unused-function -Wfatal-errors -D_GNU_SOURCE -flto -Os
 
 all: $(TARGETS)
-	prove .
+	prove --verbose .
 
 %.t: %.c
 	$(CC) $(CFLAGS) $&lt; -o $@
 
 </t>
+<t tx="caminhante.20210513091919.3">@path CClasses</t>
 </tnodes>
 </leo_file>
