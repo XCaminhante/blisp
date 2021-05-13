@@ -29,12 +29,15 @@
 <v t="caminhante.20210508223123.3"><vh>.gitmodules</vh></v>
 <v t="caminhante.20210508215135.4"><vh>/.git/</vh></v>
 <v t="caminhante.20210508231318.2"><vh>/minimal_UTF8/</vh></v>
+<v t="caminhante.20210513083839.1"><vh>/t/</vh>
+<v t="caminhante.20210513083852.1"><vh>@clean Makefile</vh></v>
+<v t="caminhante.20210513083845.1"><vh>@file 0001.c</vh></v>
+</v>
 <v t="caminhante.20210508215135.2"><vh>@auto README.md</vh></v>
+<v t="caminhante.20210508220429.1"><vh>@clean Makefile</vh></v>
 <v t="caminhante.20210508220611.1"><vh>@edit .gitignore</vh></v>
 <v t="caminhante.20210508215135.3"><vh>@edit LICENSE</vh></v>
-<v t="caminhante.20210508220429.1"><vh>@edit Makefile</vh></v>
 <v t="caminhante.20210508215346.1"><vh>@file blisp.c</vh></v>
-<v t="caminhante.20210508215135.1"><vh>b.leo</vh></v>
 </v>
 </v>
 </vnodes>
@@ -299,9 +302,33 @@ shutil.rmtree(path)
 </t>
 <t tx="caminhante.20210508214940.1">B</t>
 <t tx="caminhante.20210508215133.1"></t>
-<t tx="caminhante.20210508215135.1"></t>
 <t tx="caminhante.20210508215135.4">@path .git</t>
+<t tx="caminhante.20210508220429.1">@language makefile
+@tabwidth 4
+CFLAGS := -std=gnu99 -Wall -Werror -Wno-error=unused-function -Wfatal-errors -D_GNU_SOURCE -flto -Os
+
+all: blisp test
+
+blisp: blisp.c
+
+test:
+	make -C t/
+
+.PHONY: test</t>
 <t tx="caminhante.20210508223123.3"></t>
 <t tx="caminhante.20210508231318.2">@path minimal_UTF8</t>
+<t tx="caminhante.20210513083839.1">@path t</t>
+<t tx="caminhante.20210513083852.1">@language makefile
+@tabwidth 4
+TARGETS := $(patsubst %.c,%.t,$(wildcard *.c))
+CFLAGS := -std=gnu99 -Wall -Werror -Wno-error=unused-function -Wfatal-errors -D_GNU_SOURCE -flto -Os
+
+all: $(TARGETS)
+	prove .
+
+%.t: %.c
+	$(CC) $(CFLAGS) $&lt; -o $@
+
+</t>
 </tnodes>
 </leo_file>

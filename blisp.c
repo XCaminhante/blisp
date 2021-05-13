@@ -35,11 +35,11 @@
 //@+node:caminhante.20210508220407.3: *3* /macros
 #define ALLOC(N,S) (typeof(S)*)calloc(N,sizeof(S))
 #define INPUT_SIZE 1024*16
-//@+node:caminhante.20210508220407.4: *3* /constants, variables
+//@+node:caminhante.20210508220407.4: ** /constants, variables
 const int close_char = ')';
 bool exiting = false;
-//@+node:caminhante.20210508224249.1: *3* /types
-//@+node:caminhante.20210508220407.5: *4* enum Type
+//@+node:caminhante.20210508224249.1: ** /types
+//@+node:caminhante.20210508220407.5: *3* enum Type
 enum Type {
    NUM,
    STR,
@@ -47,12 +47,12 @@ enum Type {
    LAMBDA,
    TABLE
 };
-//@+node:caminhante.20210508220407.6: *4* struct List
+//@+node:caminhante.20210508220407.6: *3* struct List
 struct List {
    struct Atom *head;
    struct List *tail;
 };
-//@+node:caminhante.20210508220407.7: *4* struct Atom
+//@+node:caminhante.20210508220407.7: *3* struct Atom
 struct Atom {
    enum Type type;
    union {
@@ -62,13 +62,13 @@ struct Atom {
       struct Table *table;
    };
 };
-//@+node:caminhante.20210508220407.8: *4* struct Table
+//@+node:caminhante.20210508220407.8: *3* struct Table
 struct Table {
    struct uchar *key;
    struct Atom *value;
    struct Table *next;
 };
-//@+node:caminhante.20210509235504.1: *4* struct ParserState
+//@+node:caminhante.20210509235504.1: *3* struct ParserState
 struct ParserState {
   size_t in_len;
   char *in;
@@ -92,13 +92,34 @@ void warning (const char *msg, struct Atom *expr) {
 //@+node:caminhante.20210509180617.1: ** /input
 // #TODO modify the input functions to operate with a `struct ParserState`
 //@+node:caminhante.20210508234212.1: *3* size_t replenish_bytes (in_len, in, used_bytes, spare_bytes)
-// [ char array `in`
-// , positive integer `used_bytes` (number of bytes that were actually read into `in`)
-// , positive integer `spare_bytes` -> moves those spare bytes to the beginning of `in`
+// // [ char array `in`
+// // , positive integer `used_bytes` (number of bytes that were actually read into `in`)
+// // , positive integer `spare_bytes` -> moves those spare bytes to the beginning of `in`
+// // -> reads more bytes in the space immediately after the moved ones respecting the remaining
+   // // space, and returns the number of bytes currently at `in` (that's it, spare bytes +
+   // // recently read bytes) ]
+// size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes, size_t spare_bytes) {
+  // // [ spare_bytes == 0 -> I
+  // // | spare_bytes > 0
+  // // -> copy `spare_bytes` bytes from `in[used_bytes-spare_bytes-1]` to `in[0]` ]
+  // if (spare_bytes > 0) {
+    // memmove(&in[0], &in[used_bytes-spare_bytes], spare_bytes);
+  // }
+  // // [ try to read `in_len-spare_bytes` bytes from stdin to `in[spare_bytes]` ]
+  // size_t recently_read_bytes = read(STDIN_FILENO, &in[spare_bytes], in_len-spare_bytes);
+  // // [ returns how many bytes are now occupying the array ]
+  // return spare_bytes+recently_read_bytes;
+// }
+//@+node:caminhante.20210513085500.1: *3* size_t replenish_bytes (p_state)
+// [ parser state `p_state`
 // -> reads more bytes in the space immediately after the moved ones respecting the remaining
    // space, and returns the number of bytes currently at `in` (that's it, spare bytes +
    // recently read bytes) ]
-size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes, size_t spare_bytes) {
+size_t replenish_bytes (struct ParserState *p_state) {
+  size_t in_len = p_state->in_len;
+  char *in = p_state->in;
+  size_t used_bytes = *p_state->used_bytes;
+  size_t spare_bytes = *p_state->last_read;
   // [ spare_bytes == 0 -> I
   // | spare_bytes > 0
   // -> copy `spare_bytes` bytes from `in[used_bytes-spare_bytes-1]` to `in[0]` ]
@@ -111,51 +132,51 @@ size_t replenish_bytes (size_t in_len, char in[static in_len], size_t used_bytes
   return spare_bytes+recently_read_bytes;
 }
 //@+node:caminhante.20210508233816.1: *3* struct uchar _getchar (in_len, in, used_bytes, last_read)
-// [ a valid UTF8 sequence between `in[*last_read]` and `in[*used_bytes]`
-// -> returns a valid struct uchar
-// | a UTF8 sequence of length larger than the rest of `in` not yet parsed
-// -> replenish_bytes at in, *last_read = 0 and retry
-// | a invalid UTF8 sequence
-// -> a "invalid UTF8 sequence" warning, increment *last_read and try again ]
-struct uchar _getchar (size_t in_len, char in[static in_len], size_t *used_bytes, size_t *last_read) {
-  try_again:
-  // [ `*last_read < *used_bytes` -> try to extract a `struct uchar`
-  // | else -> replenish_bytes at in, *last_read = 0 and retry ]
-  if (*last_read < *used_bytes) {
-    // [ a valid UTF8 sequence with length <= `*used_bytes-*last_read` -> extract a `struct uchar`
-    // | a invalid UTF8 sequence -> issue a warning, increment `*last_read` and retry
-    // | else -> replenish_bytes at in, *last_read = 0 and retry ]
-    size_t a = uchar_bytes(&in[*last_read]);
-    // a invalid UTF8 sequence?
-    if (a == 0) {
-      // [ issue a warning, increment `*last_read` and retry ]
-      warning("Invalid UTF8 byte sequence",NULL);
-      *last_read += 1;
-      goto try_again;
-    // a valid UTF8 sequence with length <= `*used_bytes-*last_read`?
-    } else if ( a <= (*used_bytes - *last_read) ) {
-      // [ extract a `struct uchar` from `&in[*last_read]` and returns it ]
-      struct uchar b = next_uchar(&in[*last_read]);
-      *last_read += b.bytes;
-      return b;
-    // there is a valid UTF8 sequence but its length is shorter than the available rest of `in`
-    } else {
-      // [ replenish_bytes at in, *last_read = 0 and retry ]
-      size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
-      *used_bytes = a;
-      *last_read = 0;
-      goto try_again;
-    }
-  } else {
-    // [ replenish_bytes at in, *last_read = 0 and retry ]
-    size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
-    *used_bytes = a;
-    *last_read = 0;
-    goto try_again;
-  }
-  // [ inacessible -> returns a invalid 0-filled `struct uchar` ]
-  return (struct uchar){0};
-}
+// // [ a valid UTF8 sequence between `in[*last_read]` and `in[*used_bytes]`
+// // -> returns a valid struct uchar
+// // | a UTF8 sequence of length larger than the rest of `in` not yet parsed
+// // -> replenish_bytes at in, *last_read = 0 and retry
+// // | a invalid UTF8 sequence
+// // -> a "invalid UTF8 sequence" warning, increment *last_read and try again ]
+// struct uchar _getchar (size_t in_len, char in[static in_len], size_t *used_bytes, size_t *last_read) {
+  // try_again:
+  // // [ `*last_read < *used_bytes` -> try to extract a `struct uchar`
+  // // | else -> replenish_bytes at in, *last_read = 0 and retry ]
+  // if (*last_read < *used_bytes) {
+    // // [ a valid UTF8 sequence with length <= `*used_bytes-*last_read` -> extract a `struct uchar`
+    // // | a invalid UTF8 sequence -> issue a warning, increment `*last_read` and retry
+    // // | else -> replenish_bytes at in, *last_read = 0 and retry ]
+    // size_t a = uchar_bytes(&in[*last_read]);
+    // // a invalid UTF8 sequence?
+    // if (a == 0) {
+      // // [ issue a warning, increment `*last_read` and retry ]
+      // warning("Invalid UTF8 byte sequence",NULL);
+      // *last_read += 1;
+      // goto try_again;
+    // // a valid UTF8 sequence with length <= `*used_bytes-*last_read`?
+    // } else if ( a <= (*used_bytes - *last_read) ) {
+      // // [ extract a `struct uchar` from `&in[*last_read]` and returns it ]
+      // struct uchar b = next_uchar(&in[*last_read]);
+      // *last_read += b.bytes;
+      // return b;
+    // // there is a valid UTF8 sequence but its length is shorter than the available rest of `in`
+    // } else {
+      // // [ replenish_bytes at in, *last_read = 0 and retry ]
+      // size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
+      // *used_bytes = a;
+      // *last_read = 0;
+      // goto try_again;
+    // }
+  // } else {
+    // // [ replenish_bytes at in, *last_read = 0 and retry ]
+    // size_t a = replenish_bytes(in_len,in,*used_bytes,*last_read);
+    // *used_bytes = a;
+    // *last_read = 0;
+    // goto try_again;
+  // }
+  // // [ inacessible -> returns a invalid 0-filled `struct uchar` ]
+  // return (struct uchar){0};
+// }
 //@+node:caminhante.20210510000539.1: ** /memory
 //@+node:caminhante.20210510000737.1: *3* struct Atom * new_atom (type)
 //@+node:caminhante.20210510000758.1: *3* struct Atom * new_number (num)
